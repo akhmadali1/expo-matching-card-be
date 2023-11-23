@@ -1,0 +1,87 @@
+definitions:
+  auth_domain.CreateUserRequest:
+    properties:
+      created_by:
+        type: string
+      email:
+        type: string
+      is_admin:
+        type: integer
+      user_password:
+        type: string
+      username:
+        type: string
+    type: object
+  auth_domain.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  auth_domain.LoginResponse:
+    properties:
+      createdby:
+        type: string
+      createdt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      isactive:
+        type: integer
+      isadmin:
+        type: integer
+      updatedby:
+        type: string
+      updatedt:
+        type: string
+      user_password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  title: Omreca Service
+  version: "1.0"
+paths:
+  /auth/create:
+    post:
+      parameters:
+      - description: Create Auth Json
+        in: body
+        name: Auth_create
+        required: true
+        schema:
+          $ref: '#/definitions/auth_domain.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth_domain.LoginResponse'
+      tags:
+      - Auths
+  /auth/login:
+    post:
+      parameters:
+      - description: Auth JSON
+        in: body
+        name: Auth
+        required: true
+        schema:
+          $ref: '#/definitions/auth_domain.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth_domain.LoginResponse'
+      tags:
+      - Auths
+swagger: "2.0"
