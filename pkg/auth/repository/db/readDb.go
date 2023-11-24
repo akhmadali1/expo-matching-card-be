@@ -13,15 +13,43 @@ func Create(inputModel auth_domain.CreateUserRequest) (statusData bool, message 
 	returnStatus := false
 	msg := "no data"
 
-	queryGet := `INSERT INTO "expo"."tbl_score" 
-				("username", "error", "time", "score") VALUES 
-				($1, $2, $3, $4);`
-
-	_, err := db.Exec(queryGet, inputModel.Username, inputModel.Error, inputModel.Time, inputModel.Score)
+	tx, err := db.Begin()
 	if err != nil {
 		fmt.Println(err)
 		return returnStatus, err.Error()
 	}
+
+	queryPut := `
+	UPDATE "expo"."tbl_score"
+	SET "error"=(error+$1)/2, "time"=("time"+$2)/2, "score"=score+$3, difficulty = NULL
+	WHERE ("expo"."tbl_score"."username" = $4);`
+
+	rows, err := tx.Exec(queryPut, inputModel.Error, inputModel.Time, inputModel.Score, inputModel.Username)
+	if err != nil {
+		tx.Rollback()
+		fmt.Println(err)
+		return returnStatus, err.Error()
+	}
+
+	rowsAffected, err := rows.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		fmt.Println(err)
+		return returnStatus, err.Error()
+	}
+
+	if rowsAffected < 1 {
+		queryPost := `INSERT INTO "expo"."tbl_score" 
+				("username", "error", "time", "score", "difficulty") VALUES 
+				($1, $2, $3, $4, $5);`
+		_, err = tx.Exec(queryPost, inputModel.Username, inputModel.Error, inputModel.Time, inputModel.Score, inputModel.Difficulty)
+		if err != nil {
+			tx.Rollback()
+			fmt.Println(err)
+			return returnStatus, err.Error()
+		}
+	}
+	tx.Commit()
 
 	returnStatus = true
 	return returnStatus, msg
@@ -39,6 +67,7 @@ func GetAllScore() (returnDb []auth_domain.ScoreResponse, statusData bool, messa
 	"error",
 	"time",
 	"score",
+	"difficulty",
 	"createdt"
   FROM
 	"expo"."tbl_score"
@@ -62,6 +91,7 @@ func GetAllScore() (returnDb []auth_domain.ScoreResponse, statusData bool, messa
 			&returnData.Error,
 			&returnData.Time,
 			&returnData.Score,
+			&returnData.Difficulty,
 			&returnData.Createdt)
 		msg = "Success Get Data"
 		returnDatas = append(returnDatas, returnData)

@@ -6,6 +6,7 @@ type CreateUserRequest struct {
 	Username    string  `json:"username"`
 	Email       string  `json:"email"`
 	Score       float64 `json:"score"`
+	Difficulty  int     `json:"difficulty"`
 	TimeExpired int64   `json:"time_expired"`
 }
 
