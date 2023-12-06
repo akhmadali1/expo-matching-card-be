@@ -19,35 +19,14 @@ func Create(inputModel auth_domain.CreateUserRequest) (statusData bool, message 
 		return returnStatus, err.Error()
 	}
 
-	queryPut := `
-	UPDATE "expo"."tbl_score"
-	SET "error"=(error+$1)/2, "time"=("time"+$2)/2, "score"=score+$3, difficulty = NULL
-	WHERE ("expo"."tbl_score"."username" = $4);`
-
-	rows, err := tx.Exec(queryPut, inputModel.Error, inputModel.Time, inputModel.Score, inputModel.Username)
-	if err != nil {
-		tx.Rollback()
-		fmt.Println(err)
-		return returnStatus, err.Error()
-	}
-
-	rowsAffected, err := rows.RowsAffected()
-	if err != nil {
-		tx.Rollback()
-		fmt.Println(err)
-		return returnStatus, err.Error()
-	}
-
-	if rowsAffected < 1 {
-		queryPost := `INSERT INTO "expo"."tbl_score" 
+	queryPost := `INSERT INTO "expo"."tbl_score" 
 				("username", "error", "time", "score", "difficulty") VALUES 
 				($1, $2, $3, $4, $5);`
-		_, err = tx.Exec(queryPost, inputModel.Username, inputModel.Error, inputModel.Time, inputModel.Score, inputModel.Difficulty)
-		if err != nil {
-			tx.Rollback()
-			fmt.Println(err)
-			return returnStatus, err.Error()
-		}
+	_, err = tx.Exec(queryPost, inputModel.Username, inputModel.Error, inputModel.Time, inputModel.Score, inputModel.Difficulty)
+	if err != nil {
+		tx.Rollback()
+		fmt.Println(err)
+		return returnStatus, err.Error()
 	}
 	tx.Commit()
 
@@ -71,8 +50,8 @@ func GetAllScore() (returnDb []auth_domain.ScoreResponse, statusData bool, messa
 	"createdt"
   FROM
 	"expo"."tbl_score"
-	WHERE createdt <= '2023-12-01 16:00:00'
-  ORDER BY "score" DESC, "time" ASC, error ASC, createdt ASC, username ASC;`
+	WHERE createdt <= '2023-12-06 17:00:00'
+  ORDER BY "score" DESC, "time" ASC, error ASC, username ASC, createdt ASC;`
 
 	row, err := db.Query(queryGet)
 	if err != nil {
