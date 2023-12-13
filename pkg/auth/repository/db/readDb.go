@@ -50,7 +50,7 @@ func GetAllScore() (returnDb []auth_domain.ScoreResponse, statusData bool, messa
 	"createdt"
   FROM
 	"expo"."tbl_score"
-	WHERE createdt <= '2023-12-15 14:00:00'
+	WHERE createdt <= '2023-12-20 14:00:00'
   ORDER BY "score" DESC, "time" ASC, error ASC, username ASC, createdt ASC;`
 
 	row, err := db.Query(queryGet)
