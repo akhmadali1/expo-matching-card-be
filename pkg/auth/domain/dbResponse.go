@@ -7,6 +7,7 @@ import (
 
 type ScoreResponse struct {
 	Id         int
+	Rank       int
 	Username   string
 	Error      int
 	Time       int64

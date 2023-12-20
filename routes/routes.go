@@ -4,6 +4,7 @@ import (
 	"log"
 	middlewares "match_card/middleware"
 	auth_response "match_card/pkg/auth/http"
+	filter_response "match_card/pkg/filter/http"
 	upload_utils "match_card/utils/upload"
 
 	"github.com/gin-contrib/cors"
@@ -60,6 +61,12 @@ func SetupRoutes() *gin.Engine {
 	{
 		score.POST("post", auth_response.CreateHandler)
 		route.GET("score/get", auth_response.GetAllUser)
+	}
+
+	filter := protected.Group("filter")
+	{
+		filter.POST("post", filter_response.CreateHandler)
+		route.GET("filter/get", filter_response.GetAllUser)
 	}
 
 	route.Static("/files", "./public")

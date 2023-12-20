@@ -1,12 +1,12 @@
-package auth_db
+package filter_db
 
 import (
 	"fmt"
 	openDb "match_card/config/db"
-	auth_domain "match_card/pkg/auth/domain"
+	filter_domain "match_card/pkg/filter/domain"
 )
 
-func Create(inputModel auth_domain.CreateUserRequest) (statusData bool, message string) {
+func Create(inputModel filter_domain.CreateUserRequest) (statusData bool, message string) {
 	db := openDb.OpenConnection()
 	defer db.Close()
 
@@ -19,10 +19,10 @@ func Create(inputModel auth_domain.CreateUserRequest) (statusData bool, message 
 		return returnStatus, err.Error()
 	}
 
-	queryPost := `INSERT INTO "expo"."tbl_score" 
-				("username", "error", "time", "score", "difficulty") VALUES 
-				($1, $2, $3, $4, $5);`
-	_, err = tx.Exec(queryPost, inputModel.Username, inputModel.Error, inputModel.Time, inputModel.Score, inputModel.Difficulty)
+	queryPost := `INSERT INTO "expo"."tbl_filter" 
+				("username", "time", "score") VALUES 
+				($1, $2, $3);`
+	_, err = tx.Exec(queryPost, inputModel.Username, inputModel.Time, inputModel.Score)
 	if err != nil {
 		tx.Rollback()
 		fmt.Println(err)
@@ -34,24 +34,22 @@ func Create(inputModel auth_domain.CreateUserRequest) (statusData bool, message 
 	return returnStatus, msg
 }
 
-func GetAllScore() (returnDb []auth_domain.ScoreResponse, statusData bool, message string) {
+func GetAllScore() (returnDb []filter_domain.ScoreResponse, statusData bool, message string) {
 	db := openDb.OpenConnection()
 
-	var returnDatas []auth_domain.ScoreResponse
+	var returnDatas []filter_domain.ScoreResponse
 
 	returnStatus := false
 	queryGet := `SELECT
 	"id",
 	"username",
-	"error",
 	"time",
 	"score",
-	"difficulty",
 	"createdt"
   FROM
-	"expo"."tbl_score"
+	"expo"."tbl_filter"
 	WHERE createdt <= '2023-12-20 14:00:00'
-  ORDER BY "score" DESC, "time" ASC, error ASC, username ASC, createdt ASC;`
+  ORDER BY "score" DESC, "time" ASC, createdt ASC, username ASC;`
 
 	row, err := db.Query(queryGet)
 	if err != nil {
@@ -62,21 +60,17 @@ func GetAllScore() (returnDb []auth_domain.ScoreResponse, statusData bool, messa
 	defer db.Close()
 	defer row.Close()
 	msg := "No data available"
-	count := 1
+
 	for row.Next() {
-		var returnData auth_domain.ScoreResponse
+		var returnData filter_domain.ScoreResponse
 		row.Scan(
 			&returnData.Id,
 			&returnData.Username,
-			&returnData.Error,
 			&returnData.Time,
 			&returnData.Score,
-			&returnData.Difficulty,
 			&returnData.Createdt)
-		returnData.Rank = count
 		msg = "Success Get Data"
 		returnDatas = append(returnDatas, returnData)
-		count += 1
 	}
 	returnStatus = true
 	return returnDatas, returnStatus, msg
